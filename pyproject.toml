@@ -1,0 +1,12 @@
+[project]
+name = "mojiza"
+version = "0.1.0"
+description = "A lightweight Python web framework"
+authors = [{ name = "Abdulhodiy", email = "you@example.com" }]
+readme = "README.md"
+license = {text = "MIT"}
+dependencies = []
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"

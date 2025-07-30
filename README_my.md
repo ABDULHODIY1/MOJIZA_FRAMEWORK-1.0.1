@@ -125,7 +125,7 @@ The `fullpage()` function builds the entire HTML document using the following st
 7. **Render the Page**
 
    ```python
-   return page.end(AUTHOR="Muhiddinov Abdulhodiy")
+   return page.end(AUTHOR="Your name or other items or none")
    ```
 
 ---

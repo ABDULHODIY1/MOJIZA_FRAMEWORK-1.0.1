@@ -1,106 +1,65 @@
 # MOJIZA/engine/server.py
 
 import sys
+import os
 import importlib
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from .routing import router
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
+import logging
 import threading
 import time
-import logging
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib.parse import urlparse, parse_qs
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+from .routing import router
+from pathlib import Path
 
+logger = logging.getLogger("MOJIZA")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class HTMLElement:
     def __init__(self, tag, **attrs):
         self.tag = tag
-        self.attrs = {}
+        self.attrs = {k[2:]: v for k, v in attrs.items() if k.startswith('h_')}
         self.children = []
-        self.content = ""
-        for key, value in attrs.items():
-            if key == 'h_id':
-                self.attrs['id'] = value
-            elif key == 'h_class':
-                self.attrs['class'] = value
-            elif key == 'for_':
-                self.attrs['for'] = value
-            elif key.startswith('h_'):
-                # Handle other prefixed attributes
-                self.attrs[key[2:]] = value
-            else:
-                self.attrs[key] = value
+        self.content = ''
+        for k, v in attrs.items():
+            if not k.startswith('h_'):
+                self.attrs[k] = v
 
-    def __call__(self, *args, **kwargs):
-        for child in args:
-            if isinstance(child, HTMLElement) or isinstance(child, str):
-                self.children.append(child)
+    def __call__(self, *args):
+        for c in args:
+            if isinstance(c, (HTMLElement, str)):
+                self.children.append(c)
         return self
 
-    def __getattr__(self, tag_name):
-        """
-        Dynamically handle HTML tag methods.
-        Example: element.h1("Title") creates an <h1>Title</h1> inside element.
-        """
-        def create_element(*args, **attrs):
-            element = HTMLElement(tag_name, **attrs)
-            self.children.append(element)
-            for child in args:
-                if isinstance(child, HTMLElement) or isinstance(child, str):
-                    element.children.append(child)
-            return element
-        return create_element
+    def __getattr__(self, tag):
+        def create(*args, **attrs):
+            el = HTMLElement(tag, **attrs)
+            self.children.append(el)
+            for c in args:
+                if isinstance(c, (HTMLElement, str)):
+                    el.children.append(c)
+            return el
+        return create
 
-    def set_content(self, content):
-        self.content = content
-        return self
-
-    def add_class(self, class_name):
-        if 'class' in self.attrs:
-            self.attrs['class'] += f" {class_name}"
-        else:
-            self.attrs['class'] = class_name
-        return self
-
-    def add_id(self, id_name):
-        self.attrs['id'] = id_name
-        return self
-
-    def add_style(self, **styles):
-        style_str = self.attrs.get('style', '')
-        for prop, value in styles.items():
-            style_str += f"{prop.replace('_', '-')}:{value}; "
-        self.attrs['style'] = style_str.strip()
+    def set_content(self, text):
+        self.content = text
         return self
 
     def render(self, indent=0):
-        indent_space = '    ' * indent
-        attrs_str = ' '.join([f'{key}="{value}"' for key, value in self.attrs.items()])
-
-        self_closing_tags = ['meta', 'link', 'img', 'input', 'br', 'hr', 'source', 'embed',
-                             'param', 'area', 'base', 'col', 'command', 'keygen', 'track', 'wbr']
-
-        if self.tag in self_closing_tags:
-            opening_tag = f"<{self.tag} {attrs_str}/>" if attrs_str else f"<{self.tag}/>"
-            return f"{indent_space}{opening_tag}\n"
-        else:
-            opening_tag = f"<{self.tag} {attrs_str}>" if attrs_str else f"<{self.tag}>"
-            closing_tag = f"</{self.tag}>"
-
-            inner_html = ""
-            if self.content:
-                inner_html += f"{indent_space}    {self.content}\n"
-            for child in self.children:
-                if isinstance(child, HTMLElement):
-                    inner_html += child.render(indent + 1)
-                else:
-                    inner_html += f"{'    ' * (indent + 1)}{child}\n"
-
-            if self.children or self.content:
-                return f"{indent_space}{opening_tag}\n{inner_html}{indent_space}{closing_tag}\n"
-            else:
-                return f"{indent_space}{opening_tag}{closing_tag}\n"
+        sp = '    ' * indent
+        attrs = ' '.join(f'{k}="{v}"' for k, v in self.attrs.items())
+        if self.tag in ('meta', 'link', 'img', 'input', 'br', 'hr'):
+            return f"{sp}<{self.tag} {attrs}/>\n"
+        open_tag = f"<{self.tag}{' '+attrs if attrs else ''}>"
+        html = f"{sp}{open_tag}\n"
+        if self.content:
+            html += f"{sp}    {self.content}\n"
+        for c in self.children:
+            html += c.render(indent+1) if isinstance(c, HTMLElement) else f"{sp}    {c}\n"
+        html += f"{sp}</{self.tag}>\n"
+        return html
 
 class HTML:
     def __init__(self, title_document, lang="en", **attrs):
@@ -956,63 +915,115 @@ console.log(INFORMATION);
 
         return self.doctype + "\n" + self.html.render()
 
+
+def get_generated_apps():
+
+
+    current_dir = Path(__file__).parent.parent.parent  # project root
+    apps = []
+
+    for item in current_dir.iterdir():
+        if item.is_dir():
+            views_file = item / "views.py"
+            urls_file = item / "urls.py"
+            if views_file.exists() and urls_file.exists():
+                apps.append(item.name)
+
+    return apps
+
+
+
+
 class RequestHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        logger.info(f"Handling GET request for path: {self.path}")
-        view = router.get_view(self.path)
-        if view:
-            try:
-                response = view()
-                self.send_response(200)
-                self.send_header("Content-type", "text/html")
-                self.end_headers()
-                self.wfile.write(response.encode())
-                logger.info(f"Response sent for path: {self.path}")
-            except Exception as e:
-                self.send_response(500)
-                self.send_header("Content-type", "text/html")
-                self.end_headers()
-                error_message = f"<h1>500 Internal Server Error</h1><p>{str(e)}</p>"
-                self.wfile.write(error_message.encode())
-                logger.error(f"Error processing view for path {self.path}: {e}")
-        else:
-            self.send_response(404)
-            self.send_header("Content-type", "text/html")
+    def do_GET(self): self._handle()
+    def do_POST(self): self._handle()
+
+    def _handle(self):
+        parsed = urlparse(self.path)
+        if self.command == 'GET':
+            params = parse_qs(parsed.query)
+        else:  # POST
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length).decode()
+            params = parse_qs(body)
+
+        view = router.get_view(parsed.path)
+        if not view:
+            self.send_error(404, 'Not Found')
+            return
+
+        try:
+            html = view(method=self.command, params=params)
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html; charset=utf-8')
             self.end_headers()
-            self.wfile.write(b"<h1>404 Not Found</h1>")
-            logger.warning(f"404 Not Found for path: {self.path}")
+            self.wfile.write(html.encode())
+        except Exception as e:
+            logger.exception("Error during request handling")
+            self.send_error(500, str(e))
+
 
 def run_server(port=8000):
-    server_address = ('', port)
-    httpd = HTTPServer(server_address, RequestHandler)
-    logger.info(f"Starting server on port {port}...")
+    httpd = HTTPServer(('', port), RequestHandler)
+    logger.info(f'Server running on port {port}')
+
+    def reload_views():
+        project_dir = os.path.join(os.getcwd(), 'projectpapca')
+        if not os.path.exists(project_dir):
+            logger.warning("projectpapca papkasi topilmadi!")
+            return
+
+        for item in os.listdir(project_dir):
+            app_path = os.path.join(project_dir, item)
+            views_file = os.path.join(app_path, 'views.py')
+            urls_file = os.path.join(app_path, 'urls.py')
+
+            if os.path.isfile(views_file) and os.path.isfile(urls_file):
+                try:
+                    # views modulini reload qilish
+                    module_path = f'projectpapca.{item}.views'
+                    if module_path in sys.modules:
+                        importlib.reload(sys.modules[module_path])
+                        logger.info(f'{module_path} qayta yuklandi.')
+                    else:
+                        __import__(module_path)
+                        logger.info(f'{module_path} yuklandi.')
+
+                    # base_url_name ni olish
+                    urls_module = importlib.import_module(f'projectpapca.{item}.urls')
+                    base_url = getattr(urls_module, 'base_url_name', None)
+                    if base_url:
+                        logger.info(f"App `{item}` uchun URL path: '{base_url}/'")
+                    else:
+                        logger.warning(f"{item}.urls ichida `base_url_name` topilmadi.")
+
+                except Exception as e:
+                    logger.error(f"{item} moduli reload qilinmadi: {e}")
+
+    threading.Thread(target=reload_views, daemon=True).start()
+
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
         pass
     httpd.server_close()
-    logger.info("Server stopped.")
+    logger.info('Server stopped')
 
-# Auto-reload uchun handler sinfi
 
 class ReloadHandler(FileSystemEventHandler):
-    def __init__(self, callback):
-        super(ReloadHandler, self).__init__()
-        self.callback = callback
+    def __init__(self, cb):
+        super().__init__()
+        self.cb = cb
 
     def on_modified(self, event):
-        if not event.is_directory and event.src_path.endswith('.py'):
-            logger.info(f"Detected change in {event.src_path}. Reloading...")
-            self.callback()
+        if event.src_path.endswith('.py'):
+            logger.info(f'Reloading due to change in: {event.src_path}')
+            self.cb()
 
-# Auto-reloadni boshlash funksiyasi
-
-def start_auto_reload(callback):
-    event_handler = ReloadHandler(callback)
+def start_auto_reload(callback, path='.'):
     observer = Observer()
-    observer.schedule(event_handler, path='.', recursive=True)
+    observer.schedule(ReloadHandler(callback), path=path, recursive=True)
     observer.start()
-    logger.info("Auto-reload started. Watching for changes...")
     try:
         while True:
             time.sleep(1)
@@ -1020,12 +1031,10 @@ def start_auto_reload(callback):
         observer.stop()
     observer.join()
 
-# reload_server funksiyasi
+# --- Server run function ---
+def run_server(port=8000):
+    server = HTTPServer(('', port), RequestHandler)
+    logger.info(f"Server running on port {port}")
+    server.serve_forever()
 
-def reload_server():
-    logger.info("Reloading server...")
-    try:
-        importlib.reload(sys.modules['MOJIZA.engine.views'])
-        logger.info("Server reloaded.")
-    except Exception as e:
-        logger.error(f"Failed to reload server: {e}")
+

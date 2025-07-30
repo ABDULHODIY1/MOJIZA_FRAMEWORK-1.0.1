@@ -1,41 +1,215 @@
-# projectpapca/views.py
-
 from MOJIZA.engine.server import HTML
-
+# from python_review.backend_html import *
 
 def fullpage():
     page = HTML(title_document="Full HTML Elements Example")
 
     # CSS yaratish va qo'shish
+    # css = """
+    # body { font-family: Arial, sans-serif; }
+    # header, footer { background-color: #f1f1f1; padding: 20px; text-align: center; }
+    # nav ul { list-style-type: none; padding: 0; }
+    # nav ul li { display: inline; margin-right: 10px; }
+    # main { margin: 20px; }
+    # section, article, aside { margin-bottom: 20px; }
+    # table { width: 100%; border-collapse: collapse; }
+    # table, th, td { border: 1px solid black; }
+    # th, td { padding: 10px; text-align: left; }
+    # """
     css = """
-    body { font-family: Arial, sans-serif; }
-    header, footer { background-color: #f1f1f1; padding: 20px; text-align: center; }
-    nav ul { list-style-type: none; padding: 0; }
-    nav ul li { display: inline; margin-right: 10px; }
-    main { margin: 20px; }
-    section, article, aside { margin-bottom: 20px; }
-    table { width: 100%; border-collapse: collapse; }
-    table, th, td { border: 1px solid black; }
-    th, td { padding: 10px; text-align: left; }
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background-color: #121212;
+        color: #f5f5f5;
+        line-height: 1.6;
+        padding: 20px;
+    }
+
+    a {
+        color: #1DB954;
+        text-decoration: none;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    header, footer {
+        background-color: #1c1c1c;
+        padding: 20px;
+        text-align: center;
+        border-bottom: 2px solid #2c2c2c;
+    }
+
+    header h1 {
+        color: #f5f5f5;
+        font-size: 2rem;
+    }
+
+    nav ul {
+        list-style-type: none;
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 15px;
+    }
+
+    nav ul li a {
+        color: #f5f5f5;
+        font-weight: bold;
+        padding: 8px 12px;
+        border-radius: 6px;
+        transition: background 0.3s;
+    }
+
+    nav ul li a:hover {
+        background: #1DB954;
+        color: black;
+    }
+
+    main {
+        padding: 30px;
+        background-color: #181818;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        margin-top: 30px;
+    }
+
+    .section {
+        margin-bottom: 40px;
+    }
+
+    h2, h3 {
+        color: #1DB954;
+        margin-bottom: 10px;
+    }
+
+    p, li, dd {
+        color: #dcdcdc;
+        font-size: 1rem;
+    }
+
+    input, textarea, button, select {
+        width: 100%;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 6px;
+        border: 1px solid #333;
+        background-color: #2a2a2a;
+        color: #fff;
+        font-size: 1rem;
+    }
+
+    input:focus, textarea:focus {
+        border-color: #1DB954;
+        outline: none;
+    }
+
+    button {
+        background-color: #1DB954;
+        color: black;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    button:hover {
+        background-color: #17a74a;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #222;
+        color: #fff;
+        margin-top: 20px;
+    }
+
+    th, td {
+        border: 1px solid #333;
+        padding: 12px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #333;
+    }
+
+    figure img {
+        max-width: 100%;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .aside {
+        background-color: #1f1f1f;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    details {
+        background-color: #242424;
+        padding: 12px;
+        border-radius: 6px;
+        margin-top: 20px;
+        color: #ccc;
+    }
+
+    dialog {
+        background-color: #1e1e1e;
+        color: #f5f5f5;
+        border: 1px solid #333;
+        padding: 20px;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 400px;
+    }
+
+    footer p {
+        color: #aaa;
+        font-size: 0.85rem;
+    }
+
+    @media (max-width: 768px) {
+        nav ul {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        table, th, td {
+            font-size: 0.9rem;
+        }
+    }
     """
+
     page.add_styles(css)
+
 
     # Header
     header = page.header(h_id="main-header", h_class="header")
     header.h1("Full HTML Elements Example")
-    header.nav(
-        header.ul(
-            header.li(header.a("Home", href="/")),
-            header.li(header.a("About", href="/about")),
-            header.li(header.a("FAQ", href="/faq")),
-            header.li(header.a("Full Page", href="/fullpage"))
-        )
+    header.nav().ul(
+        header.li().a("Home", href="/"),
+        header.li().a("document", href="/doc"),
+        header.li().a("game", href="/GAME"),
+        header.li().a("form test", href="/home")
     )
 
     # Main Content
     main = page.main()
 
+    main.input(type="color")
     # Section: Article
     section_article = main.section(h_id="article-section", h_class="section")
     section_article.h2("Article Section")
@@ -190,4 +364,77 @@ def fullpage():
     """)
 
     return page.end(AUTHOR="Muhiddinov Abdulhodiy")
+
+def newpage():
+    page = HTML(title_document = "new page for mojiza test")
+    page.div(h_class="ho").p("hello")
+    list_of_numbers = [i for i in range(100)]
+
+    page.div(h_class="test").p(f"{list_of_numbers}")
+
+    for i in range(100):
+        page.div(h_class = "test-with-for").p(f"{i}")
+    return page.end(AUTHOR='Muhiddinov Abdulhodiy')
+
+
+
+
+def login_view():
+    page = HTML(title_document="Login Page - Mojiza Framework")
+
+    # CSS qo‘shamiz
+    css = """
+    body { font-family: sans-serif; background: #f4f4f4; }
+    .container {
+        max-width: 400px;
+        margin: auto;
+        background: #fff;
+        padding: 30px;
+        margin-top: 100px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, button {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+    }
+    """
+    page.add_styles(css)
+
+    # container
+    div = page.div(h_class="container")
+
+    # header
+    div.h2("Login to Your Account")
+    div.p("Welcome back! Please enter your credentials.")
+
+    # form
+    form = div.form(action="/", method="post")
+
+    form.label("Username", for_="username")
+    form.input(type="text", name="username", id="username", placeholder="e.g. thony123", required=True)
+
+    form.label("Password", for_="password")
+    form.input(type="password", name="password", id="password", placeholder="Your secret...", required=True)
+
+    form.button("Login", type="submit")
+
+    # Footer
+    footer = page.footer()
+    footer.p("© 2025 Mojiza Framework. Coded with ❤️ by Thony.")
+
+    # Script (optional)
+    page.add_script("""
+    console.log("Login form loaded via Mojiza 🔥");
+    """)
+
+    return page.end(AUTHOR="Thony - Future Senior Dev 😎")
+
+
+from .backend_html import project_home, guess_number_page, mojiza_mtml_documentation
+
+project_home()
+mojiza_mtml_documentation()
+
 
