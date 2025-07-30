@@ -1,15 +1,19 @@
-[project]
-[build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
-name = "mojiza"
-version = "0.1.0"
-description = "A lightweight Python web framework"
-authors = [{ name = "Abdulhodiy", email = "you@example.com" }]
-readme = "README.md"
-license = {text = "MIT"}
-dependencies = []
-
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "mojiza"
+version = "0.1.0"
+description = "A lightweight Python web framework"
+authors = [{ name = "Abdulhodiy", email = "muhiddinovabdulhodiy2@gmail.com " }]
+readme = "README.md"
+license = {text = "MIT"}
+dependencies = [
+    "aiosqlite",
+    "Jinja2>=3.1.4",
+    "loguru>=0.7.3",
+    "watchdog>=6.0.0",
+    "aiohttp>=3.11.10",
+    "qrcode>=8.0",
+]
