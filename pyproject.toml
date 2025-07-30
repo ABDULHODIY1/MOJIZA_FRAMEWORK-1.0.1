@@ -1,4 +1,7 @@
 [project]
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
 name = "mojiza"
 version = "0.1.0"
 description = "A lightweight Python web framework"
