@@ -1,0 +1,25 @@
+# Virtual environment
+.venv/
+
+# Compiled python files
+__pycache__/
+*.py[cod]
+*.so
+
+# Static files
+STATIC/
+
+# Local config/projects (do not track)
+AI.py
+projectpapca/
+config/
+
+# Package manager and build
+*.egg-info/
+dist/
+build/
+
+# VSCode and PyCharm
+.vscode/
+.idea/
+
