@@ -1,3 +1,6 @@
 .venv
 STATIC
 AI.py
+projectpapca
+config
+.gitignore
