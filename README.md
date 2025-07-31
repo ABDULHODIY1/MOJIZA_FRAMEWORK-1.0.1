@@ -5,7 +5,7 @@
 
 `MOJIZA` — bu Python asosidagi zamonaviy, minimalistik va foydalanuvchi uchun qulay web framework. Bu framework orqali siz o'zingizning web sahifalaringizni oddiy, tushunarli va tez tarzda yaratishingiz mumkin.
 ***
-![MOJIZA Banner](projectpapca/STATIC/ase/mojza.png) <!-- optional -->
+![MOJIZA Banner](/STATIC/mojza.png) <!-- optional -->
 ***
 ## 🚀 Xususiyatlar
 
@@ -34,4 +34,6 @@ MOJIZA/
 ├── app.py
 └── README.md
 ```
+
+
 loixa xali toliq bitrlmagan backend ustida hali ham ishlanmoqda!!
