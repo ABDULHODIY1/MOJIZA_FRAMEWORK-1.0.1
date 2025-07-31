@@ -7,7 +7,7 @@ __pycache__/
 *.so
 
 # Static files
-STATIC/
+STATI
 
 # Local config/projects (do not track)
 AI.py
@@ -23,3 +23,4 @@ build/
 .vscode/
 .idea/
 
+.gitignore
