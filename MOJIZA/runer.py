@@ -3,19 +3,13 @@ from MOJIZA.engine.server import run_server
 from MOJIZA.engine.routing import load_app_routes, router,add_static_routes
 from MOJIZA.engine.p_gen import create_project_structure
 from MOJIZA.engine.server import get_generated_apps
-from MOJIZA.version import __VERSION__
-from urllib.parse import urljoin
-
-# MOJIZA/engine/utils.py
-
 import os
 from urllib.parse import urljoin
 
-# Atrof-muhit o‘zgaruvchisidan olamiz, aks holda localhost:5000 ishlaydi
 BASE_URL = os.environ.get("MOJIZA_BASE_URL", "http://localhost:5000")
-# MOJIZA/engine/utils.py
+DEFAULT_NAME = "config"
 
-import os
+
 
 def HostName(request) -> str:
     """
@@ -42,7 +36,6 @@ def Static(request, filename: str) -> str:
     # urljoin bilan slash’larni to‘g‘ri bog‘laymiz
     return urljoin(f"{base}/", f"static/{filename}")
 
-DEFAULT_NAME = "config"
 
 
 def main():
@@ -55,21 +48,13 @@ def main():
 
     args = parser.parse_args()
 
-    # Versiyani ko‘rsatish
-    # if args.v:
-    #     print(f"🌟 MOJIZA Framework version: {__VERSION__}")
-    #     return
-
-    # Komandani bajarish
     if args.command == "run_script":
-        # 🔍 Avtomatik app topish
         apps = get_generated_apps()
         if apps:
             print(f"INFO:MOJIZA: apps: {', '.join(apps)}")
         else:
             print("INFO:MOJIZA: apps: No generated apps found.")
 
-        # 🔁 Routingni avtomatik yuklash
         routes = load_app_routes(".")
         add_static_routes(router, static_url_path="/static", static_folder="STATIC")
 
@@ -91,4 +76,3 @@ def main():
 
     else:
         print("ℹ️ Komanda kiriting. Masalan: `--v`, `run_script`, yoki `generate`")
-
