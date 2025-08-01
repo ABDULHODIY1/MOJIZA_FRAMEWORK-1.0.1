@@ -1,5 +1,3 @@
-# MOJIZA/models/base.py
-
 class Field:
     def __init__(self, field_type):
         self.field_type = field_type

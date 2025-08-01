@@ -7,11 +7,15 @@ import logging
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import urlparse, parse_qs
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from .routing import router
 from pathlib import Path
+from http.server import BaseHTTPRequestHandler
+from inspect import signature
+import logging
+import traceback
+
+
 
 logger = logging.getLogger("MOJIZA")
 logging.basicConfig(level=logging.INFO)
@@ -935,32 +939,75 @@ def get_generated_apps():
 
 
 class RequestHandler(BaseHTTPRequestHandler):
-    def do_GET(self): self._handle()
+    def do_GET(self):  self._handle()
     def do_POST(self): self._handle()
 
     def _handle(self):
-        parsed = urlparse(self.path)
-        if self.command == 'GET':
-            params = parse_qs(parsed.query)
-        else:  # POST
-            content_length = int(self.headers.get('Content-Length', 0))
-            body = self.rfile.read(content_length).decode()
-            params = parse_qs(body)
+        from MOJIZA.engine.routing import router
+        from inspect import signature
+        import logging
 
-        view = router.get_view(parsed.path)
-        if not view:
-            self.send_error(404, 'Not Found')
+        path = self.path.split("?", 1)[0]
+        view = router.get_view(path)
+
+        if view is None:
+            self.send_response(404)
+            self.send_header("Content-Type", "text/plain")
+            self.end_headers()
+            self.wfile.write(b"404 Not Found")
             return
 
+        # parse GET params
+        params = {}
+        if "?" in self.path:
+            for part in self.path.split("?", 1)[1].split("&"):
+                if "=" in part:
+                    k, v = part.split("=", 1)
+                    params[k] = v
+
         try:
-            html = view(method=self.command, params=params)
-            self.send_response(200)
-            self.send_header('Content-type', 'text/html; charset=utf-8')
+            # --- STATIC FILES: bypass signature logic ---
+            if path.startswith("/static/"):
+                # serve_static_file expects (request,) (possibly via partial)
+                result = view(self)
+
+            else:
+                # --- DYNAMIC VIEWS: inspect signature ---
+                sig = signature(view)
+                names = list(sig.parameters.keys())
+
+                if names == ["request"]:
+                    result = view(self)
+
+                elif names == ["method", "params"]:
+                    result = view(method=self.command, params=params)
+
+                else:
+                    raise Exception(f"View funksiyasi noto‘g‘ri formatda! Parametrlar: {names}")
+
+            # normalize result into (status, content_type, content)
+            if isinstance(result, tuple) and len(result) == 3:
+                status, content_type, content = result
+                if isinstance(content, str):
+                    content = content.encode()
+                elif not isinstance(content, bytes):
+                    content = str(content).encode()
+            else:
+                status, content_type, content = 200, "text/html", str(result).encode()
+
+            # send response
+            self.send_response(status)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(content)))
             self.end_headers()
-            self.wfile.write(html.encode())
+            self.wfile.write(content)
+
         except Exception as e:
-            logger.exception("Error during request handling")
-            self.send_error(500, str(e))
+            logging.getLogger("MOJIZA.engine.server").exception("Error during request handling")
+            self.send_response(500)
+            self.send_header("Content-Type", "text/plain")
+            self.end_headers()
+            self.wfile.write(f"500 Internal Server Error\n\n{e}".encode())
 
 
 def run_server(port=8000):
@@ -1036,5 +1083,3 @@ def run_server(port=8000):
     server = HTTPServer(('', port), RequestHandler)
     logger.info(f"Server running on port {port}")
     server.serve_forever()
-
-

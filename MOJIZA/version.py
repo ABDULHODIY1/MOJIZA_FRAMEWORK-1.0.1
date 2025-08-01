@@ -1,8 +1,8 @@
 """
 
-MOJIZA V:0.0.1
+MOJIZA V:0.1.0
 
 """
 
 
-__VERSION__ = '0.0.1'
+__VERSION__ = '0.1.0'
