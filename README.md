@@ -18,22 +18,8 @@
 - ️ API tarzida ishlatish imkoniyati
 -  Django bilan integratsiya qilish mumkin (view → url)
 
-## 📂 Loyiha tuzilmasi
+## 📜Loixa Documentatsiyasi: [Document of Mojiza Framework]([https://example.com](https://mojiza-doc-sitr.onrender.com/doc))
 
-```bash
-MOJIZA/
-├── engine/
-│   ├── server.py
-│   ├── routing.py
-│   ├── components.py
-│   └── ...
-├── static/
-│   └── style.css
-├── templates/
-│   └── ...
-├── app.py
-└── README.md
-```
 
 
 loixa xali toliq bitrlmagan backend ustida hali ham ishlanmoqda!!
