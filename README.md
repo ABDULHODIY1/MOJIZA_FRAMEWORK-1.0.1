@@ -18,7 +18,8 @@
 - ️ API tarzida ishlatish imkoniyati
 -  Django bilan integratsiya qilish mumkin (view → url)
 
-## 📜Loixa Documentatsiyasi: [Document of Mojiza Framework]([https://example.com](https://mojiza-doc-sitr.onrender.com/doc))
+## 📜Loixa Documentatsiyasi: 
+[Document of Mojiza Framework]([https://example.com](https://mojiza-doc-sitr.onrender.com/doc))
 
 
 
