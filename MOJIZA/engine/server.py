@@ -941,10 +941,10 @@ def get_generated_apps():
 class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):  self._handle()
     def do_POST(self): self._handle()
-
     def _handle(self):
         from MOJIZA.engine.routing import router
         from inspect import signature
+        from urllib.parse import parse_qs
         import logging
 
         path = self.path.split("?", 1)[0]
@@ -957,35 +957,35 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.wfile.write(b"404 Not Found")
             return
 
-        # parse GET params
-        params = {}
-        if "?" in self.path:
-            for part in self.path.split("?", 1)[1].split("&"):
-                if "=" in part:
-                    k, v = part.split("=", 1)
-                    params[k] = v
-
+        # ✅ GET yoki POST parametrlari
         try:
-            # --- STATIC FILES: bypass signature logic ---
+            if self.command == "POST":
+                content_length = int(self.headers.get("Content-Length", 0))
+                body = self.rfile.read(content_length).decode("utf-8")
+                params = parse_qs(body)  # {'guess': ['22']}
+            else:
+                params = {}
+                if "?" in self.path:
+                    query = self.path.split("?", 1)[1]
+                    params = parse_qs(query)
+
+            # ✅ STATIC FILES
             if path.startswith("/static/"):
-                # serve_static_file expects (request,) (possibly via partial)
                 result = view(self)
 
             else:
-                # --- DYNAMIC VIEWS: inspect signature ---
+                # ✅ View funksiyasini aniqlash
                 sig = signature(view)
                 names = list(sig.parameters.keys())
 
                 if names == ["request"]:
                     result = view(self)
-
                 elif names == ["method", "params"]:
                     result = view(method=self.command, params=params)
-
                 else:
                     raise Exception(f"View funksiyasi noto‘g‘ri formatda! Parametrlar: {names}")
 
-            # normalize result into (status, content_type, content)
+            # ✅ Javobni formatlash
             if isinstance(result, tuple) and len(result) == 3:
                 status, content_type, content = result
                 if isinstance(content, str):
@@ -995,7 +995,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             else:
                 status, content_type, content = 200, "text/html", str(result).encode()
 
-            # send response
+            # ✅ Yuborish
             self.send_response(status)
             self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(len(content)))

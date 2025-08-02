@@ -23,7 +23,6 @@ def create_project_structure(name):
     with open(f"{name}/urls.py", "w") as f:
         f.write(
             "from MOJIZA.engine.routing import PAGE\n"
-            "from .views import project_view\n"
            )
 
     with open(f"{name}/views.py", "w") as f:
