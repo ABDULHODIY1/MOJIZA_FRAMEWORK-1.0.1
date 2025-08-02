@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="mojiza",
-    version="0.1.3",
+    version="0.1.3.b1",
     packages=find_packages(),
     include_package_data=True,
     install_requires=[],
