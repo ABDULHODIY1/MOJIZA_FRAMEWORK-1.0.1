@@ -26,9 +26,9 @@
 ```bash
 pip install mojiza==0.1.3b1
 ```
-~~~
-project faylingiz ichida app.py (yoki boshqa biron) nomdagi fayl oching va quydagilarni yozing:
-~~~
+
+*** project faylingiz ichida app.py (yoki boshqa biron) nomdagi fayl oching va quydagilarni yozing:
+
 ```python
 from MOJIZA.runer import main
 
@@ -36,9 +36,8 @@ from MOJIZA.runer import main
 if __name__ == "__main__":
     main()
 ```
-~~~
-va quyda keltrlgan kammandalarni ishlating:
-~~~
+
+*** va quyda keltrlgan kammandalarni ishlating
 ### APP Generatsiya qilish:
 ```bash
 python app.py generate -n appname
