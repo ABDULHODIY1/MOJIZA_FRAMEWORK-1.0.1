@@ -1,5 +1,3 @@
-# MOJIZA/engine/server.py
-
 import sys
 import os
 import importlib
@@ -85,10 +83,7 @@ class HTML:
         self.body = HTMLElement('body')
         self.html.children.append(self.body)
 
-        # self._initialize_elements()
-
     def __getattr__(self, tag_name):
-        # Allow dynamic creation of any HTML tag
         def create_element(*args, **attrs):
             element = HTMLElement(tag_name, **attrs)
             self.body.children.append(element)
@@ -888,9 +883,6 @@ class HTML:
         self.body.children.append(wbr)
         return wbr
 
-    # Qo'shimcha HTML teglarini yaratish uchun metodlar
-    # (Div, Span, Ul, Li, Form, Button, Table, Tr, Td allaqachon standart tags ichida)
-
     def add_styles(self, css):
         style = HTMLElement('style').set_content(css)
         self.head.children.append(style)
@@ -923,7 +915,7 @@ console.log(INFORMATION);
 def get_generated_apps():
 
 
-    current_dir = Path(__file__).parent.parent.parent  # project root
+    current_dir = Path(__file__).parent.parent.parent
     apps = []
 
     for item in current_dir.iterdir():
@@ -957,24 +949,21 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.wfile.write(b"404 Not Found")
             return
 
-        # ✅ GET yoki POST parametrlari
         try:
             if self.command == "POST":
                 content_length = int(self.headers.get("Content-Length", 0))
                 body = self.rfile.read(content_length).decode("utf-8")
-                params = parse_qs(body)  # {'guess': ['22']}
+                params = parse_qs(body)  
             else:
                 params = {}
                 if "?" in self.path:
                     query = self.path.split("?", 1)[1]
                     params = parse_qs(query)
 
-            # ✅ STATIC FILES
             if path.startswith("/static/"):
                 result = view(self)
 
             else:
-                # ✅ View funksiyasini aniqlash
                 sig = signature(view)
                 names = list(sig.parameters.keys())
 
@@ -985,7 +974,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                 else:
                     raise Exception(f"View funksiyasi noto‘g‘ri formatda! Parametrlar: {names}")
 
-            # ✅ Javobni formatlash
             if isinstance(result, tuple) and len(result) == 3:
                 status, content_type, content = result
                 if isinstance(content, str):
@@ -995,7 +983,6 @@ class RequestHandler(BaseHTTPRequestHandler):
             else:
                 status, content_type, content = 200, "text/html", str(result).encode()
 
-            # ✅ Yuborish
             self.send_response(status)
             self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(len(content)))
@@ -1027,7 +1014,6 @@ def run_server(port=8000):
 
             if os.path.isfile(views_file) and os.path.isfile(urls_file):
                 try:
-                    # views modulini reload qilish
                     module_path = f'projectpapca.{item}.views'
                     if module_path in sys.modules:
                         importlib.reload(sys.modules[module_path])
@@ -1035,8 +1021,6 @@ def run_server(port=8000):
                     else:
                         __import__(module_path)
                         logger.info(f'{module_path} yuklandi.')
-
-                    # base_url_name ni olish
                     urls_module = importlib.import_module(f'projectpapca.{item}.urls')
                     base_url = getattr(urls_module, 'base_url_name', None)
                     if base_url:
@@ -1078,7 +1062,6 @@ def start_auto_reload(callback, path='.'):
         observer.stop()
     observer.join()
 
-# --- Server run function ---
 def run_server(port=8000):
     server = HTTPServer(('', port), RequestHandler)
     logger.info(f"Server running on port {port}")
