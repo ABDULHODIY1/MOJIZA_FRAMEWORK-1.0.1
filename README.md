@@ -22,7 +22,7 @@
 ***
 [Document of Mojiza Framework](https://mojiza-doc-sitr.onrender.com/doc)
 ***
-##ishlatish:
+### ishlatish:
 ```bash
 pip install mojiza==0.1.3b1
 ```
@@ -39,11 +39,11 @@ if __name__ == "__main__":
 ~~~
 va quyda keltrlgan kammandalarni ishlating:
 ~~~
-##APP Generatsiya qilish:
+### APP Generatsiya qilish:
 ```bash
 python app.py generate -n appname
 ```
-* appname icidagi views.py uchun example
+### appname icidagi views.py uchun example
 ```python
 from MOJIZA.engine.server import HTML
 from MOJIZA.static.make_static import Static
@@ -113,7 +113,7 @@ def guess_number_page(method, params):
 
     return page.end(AUTHOR="Thony")
 ```
-##app name ichidagi urls.py uchun example test kodi:
+### app name ichidagi urls.py uchun example test kodi:
 ```python
 from MOJIZA.engine.routing import PAGE
 from .views import home,guess_number_page
@@ -128,7 +128,7 @@ def Test_game(method, params):
 
 ```
 
-##ishga tushurish
+### ishga tushurish
 ```bash
 python app.py generate -n run_script
 ```
