@@ -27,7 +27,7 @@
 pip install mojiza==0.1.3b1
 ```
 
-*** project faylingiz ichida app.py (yoki boshqa biron) nomdagi fayl oching va quydagilarni yozing:
+- project faylingiz ichida app.py (yoki boshqa biron) nomdagi fayl oching va quydagilarni yozing:
 
 ```python
 from MOJIZA.runer import main
