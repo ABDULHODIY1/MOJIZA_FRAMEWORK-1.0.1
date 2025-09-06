@@ -31,7 +31,6 @@ class Router:
         return None
 
 
-# Router instance
 router = Router()
 
 
