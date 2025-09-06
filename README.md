@@ -37,7 +37,8 @@ if __name__ == "__main__":
     main()
 ```
 
-*** va quyda keltrlgan kammandalarni ishlating
+
+- va quyda keltrlgan kammandalarni ishlating 
 ### APP Generatsiya qilish:
 ```bash
 python app.py generate -n appname
