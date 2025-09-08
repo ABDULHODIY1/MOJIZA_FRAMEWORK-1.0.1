@@ -130,7 +130,7 @@ def Test_game(method, params):
 
 ### ishga tushurish
 ```bash
-python app.py generate -n run_script
+python app.py run_script
 ```
 
 
