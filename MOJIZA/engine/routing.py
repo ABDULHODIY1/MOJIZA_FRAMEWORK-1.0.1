@@ -1,5 +1,6 @@
 import logging
 import importlib.util
+import mimetypes
 from urllib.parse import unquote
 import os
 
@@ -94,12 +95,29 @@ def load_app_routes(project_root):
     return routes
 
 
+def resolve_static_path(static_folder, rel_path):
+    """Return the absolute path of ``rel_path`` inside ``static_folder``.
+
+    Returns None when the resolved path (after following ``..`` segments and
+    symlinks) would leave ``static_folder``.
+    """
+    root = os.path.realpath(static_folder)
+    candidate = os.path.realpath(os.path.join(root, rel_path))
+    if os.path.commonpath([root, candidate]) != root:
+        return None
+    return candidate
+
+
 def add_static_routes(router, static_url_path="/static", static_folder="STATIC"):
     static_folder = os.path.abspath(static_folder)
 
     def serve_static_file(request, **kwargs):
-        rel_path = unquote(request.path[len(static_url_path):].lstrip("/"))
-        file_path = os.path.join(static_folder, rel_path)
+        rel_path = unquote(request.path.split("?", 1)[0][len(static_url_path):].lstrip("/"))
+        file_path = resolve_static_path(static_folder, rel_path)
+
+        if file_path is None:
+            logger.warning(f"Blocked static path outside {static_folder}: {request.path}")
+            return 403, "text/plain", b"Forbidden"
 
         if os.path.isdir(file_path):
             return 403, "text/plain", b"Directory listing is forbidden"
@@ -110,7 +128,7 @@ def add_static_routes(router, static_url_path="/static", static_folder="STATIC")
         with open(file_path, "rb") as f:
             content = f.read()
 
-        content_type = "image/png" if file_path.endswith(".png") else "text/plain"
-        return 200, content_type, content
+        content_type, _ = mimetypes.guess_type(file_path)
+        return 200, content_type or "application/octet-stream", content
 
     router.add_route(f"{static_url_path}/", serve_static_file, exact=False)
