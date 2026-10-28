@@ -11,11 +11,12 @@ def serve_static_file(request):
     """
     Static fayllar (rasm, video, pdf, css, js va hokazo) uchun universal view.
     """
-    rel_path = unquote(request.path[len("/static/"):])
-    base = os.path.abspath("STATIC")
-    file_path = os.path.abspath(os.path.join(base, rel_path))
+    from MOJIZA.engine.routing import resolve_static_path
 
-    if not file_path.startswith(base):
+    rel_path = unquote(request.path.split("?", 1)[0][len("/static/"):])
+    file_path = resolve_static_path("STATIC", rel_path)
+
+    if file_path is None:
         return 403, "text/plain", b"Forbidden"
 
     if os.path.isdir(file_path):
