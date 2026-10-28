@@ -24,3 +24,5 @@ build/
 .idea/
 
 .gitignore
+# macOS
+.DS_Store
