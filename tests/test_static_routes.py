@@ -1,11 +1,13 @@
 import http.client
 import threading
 from http.server import HTTPServer
+from types import SimpleNamespace
 
 import pytest
 
 from MOJIZA.engine.routing import Router, add_static_routes, resolve_static_path
 import MOJIZA.engine.routing as routing
+from MOJIZA.static.make_static import serve_static_file
 
 
 @pytest.fixture
@@ -55,6 +57,24 @@ def test_blocks_path_traversal(static_server, path):
     status, _, body = static_server(path)
     assert status == 403
     assert b"TOP-SECRET" not in body
+
+
+@pytest.mark.parametrize("path", ["/static/logo.png%00", "/static/%00logo.png"])
+def test_blocks_null_byte_paths(static_server, path):
+    status, _, body = static_server(path)
+    assert status == 403
+    assert body == b"Forbidden"
+
+
+@pytest.mark.parametrize("path", ["/static/logo.png%00", "/static/%00logo.png"])
+def test_legacy_static_handler_blocks_null_byte_paths(tmp_path, monkeypatch, path):
+    (tmp_path / "STATIC").mkdir()
+    (tmp_path / "STATIC" / "logo.png").write_bytes(b"png-bytes")
+    monkeypatch.chdir(tmp_path)
+
+    assert serve_static_file(SimpleNamespace(path=path)) == (
+        403, "text/plain", b"Forbidden"
+    )
 
 
 def test_missing_file_and_directory(static_server):

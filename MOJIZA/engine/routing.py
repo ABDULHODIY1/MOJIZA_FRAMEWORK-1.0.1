@@ -98,9 +98,12 @@ def load_app_routes(project_root):
 def resolve_static_path(static_folder, rel_path):
     """Return the absolute path of ``rel_path`` inside ``static_folder``.
 
-    Returns None when the resolved path (after following ``..`` segments and
-    symlinks) would leave ``static_folder``.
+    Returns None for paths containing a null byte or when the resolved path
+    (after following ``..`` segments and symlinks) would leave ``static_folder``.
     """
+    if "\x00" in rel_path:
+        return None
+
     root = os.path.realpath(static_folder)
     candidate = os.path.realpath(os.path.join(root, rel_path))
     if os.path.commonpath([root, candidate]) != root:
